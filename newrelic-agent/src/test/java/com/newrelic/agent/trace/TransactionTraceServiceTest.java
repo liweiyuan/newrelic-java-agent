@@ -48,7 +48,6 @@ public class TransactionTraceServiceTest {
         ServiceFactory.getServiceManager().stop();
         ServiceFactory.setServiceManager(null);
     }
-
     private void createServiceManager(Map<String, Object> configMap) throws Exception {
         MockServiceManager serviceManager = new MockServiceManager();
         ServiceFactory.setServiceManager(serviceManager);

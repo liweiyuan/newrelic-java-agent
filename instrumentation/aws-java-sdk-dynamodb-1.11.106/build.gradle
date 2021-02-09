@@ -4,7 +4,7 @@ dependencies {
 
     implementation("com.amazonaws:aws-java-sdk-dynamodb:1.11.106")
 
-    testImplementation("com.amazonaws:DynamoDBLocal:1.11.0")
+    testImplementation("com.amazonaws:DynamoDBLocal:1.11.0.1")
     testImplementation("com.almworks.sqlite4java:sqlite4java:1.0.392")
     testImplementation("com.almworks.sqlite4java:libsqlite4java-osx:1.0.392")
     testImplementation("com.almworks.sqlite4java:libsqlite4java-linux-i386:1.0.392")

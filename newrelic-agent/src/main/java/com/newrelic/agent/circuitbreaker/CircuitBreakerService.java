@@ -42,6 +42,7 @@ import java.util.logging.Level;
  * current thread cannot be assumed to have a TransactionActivity or a Transaction.<br>
  * <br>
  * The default memory and gc thresholds are set in {@link CircuitBreakerConfig}.
+ * todo 需要了解一下
  */
 public class CircuitBreakerService extends AbstractService implements HarvestListener, AgentConfigListener {
     private static final int TRACER_SAMPLING_RATE = 1000;
