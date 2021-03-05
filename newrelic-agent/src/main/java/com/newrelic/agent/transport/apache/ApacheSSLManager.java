@@ -7,7 +7,9 @@
 
 package com.newrelic.agent.transport.apache;
 
+import com.google.common.collect.ImmutableList;
 import com.newrelic.agent.Agent;
+import com.newrelic.agent.config.DataSenderConfig;
 import org.apache.http.ssl.SSLContextBuilder;
 
 import javax.net.ssl.SSLContext;
@@ -31,15 +33,20 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 
 public class ApacheSSLManager {
-    private static final String NEW_RELIC_CERT = "META-INF/newrelic-com.pem";
+    private static final String NEW_RELIC_CERTS_PATH = "META-INF/certs/";
+    private static final Collection<String> NEW_RELIC_CERTS = ImmutableList.of("newrelic-com.pem",
+            "eu-newrelic-com.pem", "eu01-nr-data-net.pem");
 
-
-    public static SSLContext createSSLContext(String caBundlePath) {
+    public static SSLContext createSSLContext(DataSenderConfig config) {
         SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
         try {
-            if (caBundlePath != null) {
-                sslContextBuilder.loadTrustMaterial(getKeyStore(caBundlePath), null);
-            } else {
+            if (config.getCaBundlePath() != null) {
+                if (config.getUsePrivateSSL()) {
+                   Agent.LOG.log(Level.FINE, "Ignoring use_private_ssl config." +
+                           " Using SSL certificates provided by ca_bundle_path.");
+                }
+                sslContextBuilder.loadTrustMaterial(getKeyStore(config.getCaBundlePath()), null);
+            } else if (config.getUsePrivateSSL()){
                 addNewRelicCertToTrustStore(sslContextBuilder);
             }
             return sslContextBuilder.build();
@@ -49,30 +56,36 @@ public class ApacheSSLManager {
         }
     }
 
-    private static void addNewRelicCertToTrustStore(SSLContextBuilder sslContextBuilder)
-            throws KeyStoreException, CertificateException, NoSuchAlgorithmException {
-        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        URL nrCertUrl = ApacheSSLManager.class.getClassLoader().getResource(NEW_RELIC_CERT);
-        if (nrCertUrl != null) {
-            try (InputStream is = nrCertUrl.openStream()) {
-                CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                X509Certificate cert = (X509Certificate) cf.generateCertificate(is);
-                boolean sslCertIsValid = isSslCertValid(cert);
-                if (sslCertIsValid) {
-                    logIfExpiringSoon(cert.getNotAfter());
-                    // Initialize keystore and add valid New Relic certificate
-                    keystore.load(null, null);
-                    keystore.setCertificateEntry("newrelic", cert);
-                    Agent.LOG.log(Level.FINEST, "Installed New Relic ssl certificate at alias: newrelic. ");
-                    Agent.LOG.log(Level.FINEST, "SSL Certificate expires on: {0}", cert.getNotAfter());
+    private static void addNewRelicCertToTrustStore(SSLContextBuilder sslContextBuilder) {
+        // Initialize keystore and add valid New Relic certificates
+        try {
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keystore.load(null, null);
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            for (String file : NEW_RELIC_CERTS) {
+                URL nrCertUrl = ApacheSSLManager.class.getClassLoader().getResource(NEW_RELIC_CERTS_PATH + file);
+                if (nrCertUrl != null) {
+                    try (InputStream is = nrCertUrl.openStream()) {
+                        X509Certificate cert = (X509Certificate) cf.generateCertificate(is);
+                        boolean sslCertIsValid = isSslCertValid(cert);
+                        if (sslCertIsValid) {
+                            logIfExpiringSoon(cert.getNotAfter());
+                            String alias = file.split("\\.pem")[0];
+                            keystore.setCertificateEntry(alias, cert);
+                            Agent.LOG.log(Level.FINEST, "Installed New Relic ssl certificate at alias: " + alias);
+                            Agent.LOG.log(Level.FINEST, "SSL Certificate expires on: {0}", cert.getNotAfter());
+                        }
+                    } catch (IOException e) {
+                        Agent.LOG.log(Level.INFO, "Unable to add bundled New Relic ssl certificate.", e);
+                    }
+                } else {
+                    Agent.LOG.log(Level.INFO, "Unable to find bundled New Relic ssl certificates.");
                 }
-            } catch (IOException e) {
-                Agent.LOG.log(Level.INFO, "Unable to add bundled New Relic ssl certificate.", e);
             }
-        } else {
-            Agent.LOG.log(Level.INFO, "Unable to find bundled New Relic ssl certificate.");
+            sslContextBuilder.loadTrustMaterial(keystore, null);
+        } catch (IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException e) {
+            Agent.LOG.log(Level.INFO, "Unable to add bundled New Relic ssl certificate.", e);
         }
-        sslContextBuilder.loadTrustMaterial(keystore, null);
     }
 
     private static void logIfExpiringSoon(Date expiry) {
@@ -81,7 +94,7 @@ public class ApacheSSLManager {
         cal.add(Calendar.MONTH, +3);
         if (cal.getTime().compareTo(expiry) > 0) {
             Agent.LOG.log(Level.WARNING, "New Relic ssl certificate expire on {0}.\n" +
-                    "Applications using a custom Trustore may need to update the agent " +
+                    "Applications using a custom Truststore may need to update the agent " +
                     "or provide a valid certificate using the ca_bundle_path config", expiry);
         }
     }
@@ -91,7 +104,7 @@ public class ApacheSSLManager {
             cert.checkValidity();
         } catch (CertificateExpiredException | CertificateNotYetValidException e) {
             Agent.LOG.log(Level.WARNING, "New Relic ssl certificate has expired.\n" +
-                    "Applications using a custom Trustore may need to update the agent " +
+                    "Applications using a custom Truststore may need to update the agent " +
                     "or provide a valid certificate using the ca_bundle_path config", e);
             return false;
         }
