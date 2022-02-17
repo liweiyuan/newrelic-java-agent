@@ -23,6 +23,7 @@ public class ResponseTimeStatsImpl extends AbstractStats implements ResponseTime
     private static final long NANOSECONDS_PER_SECOND_SQUARED = TimeConversion.NANOSECONDS_PER_SECOND
             * TimeConversion.NANOSECONDS_PER_SECOND;
 
+    // FIXME:  Atomic or synchronize?
     private long total;
     private long totalExclusive;
     private long minValue;

@@ -18,6 +18,7 @@ import java.util.logging.Level;
  */
 public class StatsImpl extends AbstractStats implements Stats {
 
+    // FIXME: Atomic of synchronize?
     private float total;
     private float minValue;
     private float maxValue;
