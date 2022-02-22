@@ -1,10 +1,19 @@
 package com.newrelic.agent.stats;
 
+import com.newrelic.agent.util.TimeConversion;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class ResponseTimeStatsImplMicroBenchmarks {
+
+    private final static int THREADS = 100;
+    private final static int ITERATIONS = 100_000;
+    private final static float BASE = (float)(THREADS * ITERATIONS) / TimeConversion.NANOSECONDS_PER_SECOND;
 
     public static void main(String[] args) {
         System.out.println("-----------------------------------------------------------------");
@@ -48,15 +57,17 @@ public class ResponseTimeStatsImplMicroBenchmarks {
                                         ExecutorService executorService) {
         System.out.println("*** " + header + " ***");
         System.out.println(doEet(responseTimeStats, executorService) + "ms");
+        float accuracy = (responseTimeStats.getTotal() * 100) / BASE;
+        System.out.println("Accuracy = " + accuracy + "%");
         System.out.println(responseTimeStats);
         responseTimeStats.reset();
     }
 
     public static long doEet(ResponseTimeStats responseTimeStats, ExecutorService executor) {
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < THREADS; i++) {
             executor.submit(() -> {
-                for (int j = 0; j < 100_000; j++) {
+                for (int j = 0; j < ITERATIONS; j++) {
                     responseTimeStats.recordResponseTimeInNanos(1);
                 }
             });
