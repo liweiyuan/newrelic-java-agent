@@ -14,7 +14,7 @@ public class ResponseTimeStatsImplTest {
         printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #2)");
         printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #3)");
         System.out.println("-----------------------------------------------------------------");
-        ResponseTimeStatsImpl atomicImpl = new ResponseTimeStatsImpl();
+        ResponseTimeStats atomicImpl = new ResponseTimeStatsAtomicImpl();
         printResultsFor(atomicImpl, "Atomic Implementation (Warmup)");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #1)");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #2)");
@@ -38,11 +38,11 @@ public class ResponseTimeStatsImplTest {
     }
 
     public static long doEet(ResponseTimeStats responseTimeStats) {
-        ExecutorService multithreadedExecutor = Executors.newFixedThreadPool(10);
+        ExecutorService multithreadedExecutor = Executors.newFixedThreadPool(100);
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             multithreadedExecutor.submit(() -> {
-                for (int j = 0; j < 1_000_000; j++) {
+                for (int j = 0; j < 100_000; j++) {
                     responseTimeStats.recordResponseTimeInNanos(1);
                 }
             });
