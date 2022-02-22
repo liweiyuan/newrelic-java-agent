@@ -12,7 +12,7 @@ public class ResponseTimeStatsImplTest {
     }
 
     public static long doEet() {
-        ResponseTimeStats multithreaded = new ResponseTimeStatsImpl();
+        ResponseTimeStats multithreaded = new ResponseTimeStatsAtomicImpl();
 
         ExecutorService multithreadedExecutor = Executors.newFixedThreadPool(10);
         long start = System.currentTimeMillis();
