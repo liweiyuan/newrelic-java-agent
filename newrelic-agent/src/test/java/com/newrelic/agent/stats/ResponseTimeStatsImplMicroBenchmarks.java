@@ -8,6 +8,9 @@ public class ResponseTimeStatsImplMicroBenchmarks {
 
     public static void main(String[] args) {
         System.out.println("-----------------------------------------------------------------");
+        ResponseTimeStats base = new ResponseTimeStatsImpl();
+        printResultsFor(base, "Single Threaded Base", Executors.newSingleThreadExecutor());
+        System.out.println("-----------------------------------------------------------------");
         ResponseTimeStats currentNotThreadSafe = new ResponseTimeStatsImpl();
         printResultsFor(currentNotThreadSafe, "Current Implementation (Warmup)");
         printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #1)");
@@ -38,29 +41,33 @@ public class ResponseTimeStatsImplMicroBenchmarks {
     }
 
     private static void printResultsFor(ResponseTimeStats responseTimeStats, String header) {
+        printResultsFor(responseTimeStats, header, Executors.newFixedThreadPool(10));
+    }
+
+    private static void printResultsFor(ResponseTimeStats responseTimeStats, String header,
+                                        ExecutorService executorService) {
         System.out.println("*** " + header + " ***");
-        System.out.println(doEet(responseTimeStats) + "ms");
+        System.out.println(doEet(responseTimeStats, executorService) + "ms");
         System.out.println(responseTimeStats);
         responseTimeStats.reset();
     }
 
-    public static long doEet(ResponseTimeStats responseTimeStats) {
-        ExecutorService multithreadedExecutor = Executors.newFixedThreadPool(100);
+    public static long doEet(ResponseTimeStats responseTimeStats, ExecutorService executor) {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 100; i++) {
-            multithreadedExecutor.submit(() -> {
+            executor.submit(() -> {
                 for (int j = 0; j < 100_000; j++) {
                     responseTimeStats.recordResponseTimeInNanos(1);
                 }
             });
         }
-        multithreadedExecutor.shutdown();
+        executor.shutdown();
         try {
-            if (!multithreadedExecutor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                multithreadedExecutor.shutdownNow();
+            if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                executor.shutdownNow();
             }
         } catch (InterruptedException e) {
-            multithreadedExecutor.shutdownNow();
+            executor.shutdownNow();
         }
         long end = System.currentTimeMillis();
         return end - start;
