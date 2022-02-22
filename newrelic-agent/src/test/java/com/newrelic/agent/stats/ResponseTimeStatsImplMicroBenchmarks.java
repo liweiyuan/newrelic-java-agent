@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ResponseTimeStatsImplTest {
+public class ResponseTimeStatsImplMicroBenchmarks {
 
     public static void main(String[] args) {
         System.out.println("-----------------------------------------------------------------");
@@ -13,20 +13,27 @@ public class ResponseTimeStatsImplTest {
         printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #1)");
         printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #2)");
         printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #3)");
+        printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #4)");
+        printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #5)");
+        printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #6)");
         System.out.println("-----------------------------------------------------------------");
         ResponseTimeStats atomicImpl = new ResponseTimeStatsAtomicImpl();
         printResultsFor(atomicImpl, "Atomic Implementation (Warmup)");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #1)");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #2)");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #3)");
-        System.out.println("-----------------------------------------------------------------");
-        printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #4)");
-        printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #5)");
-        printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #6)");
-        System.out.println("-----------------------------------------------------------------");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #4)");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #5)");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #6)");
+        System.out.println("-----------------------------------------------------------------");
+        ResponseTimeStats volatileImpl = new ResponseTimeStatsVolatileImpl();
+        printResultsFor(volatileImpl, "Volatile Implementation (Warmup)");
+        printResultsFor(volatileImpl, "Volatile Implementation (Benchmark #1)");
+        printResultsFor(volatileImpl, "Volatile Implementation (Benchmark #2)");
+        printResultsFor(volatileImpl, "Volatile Implementation (Benchmark #3)");
+        printResultsFor(volatileImpl, "Volatile Implementation (Benchmark #4)");
+        printResultsFor(volatileImpl, "Volatile Implementation (Benchmark #5)");
+        printResultsFor(volatileImpl, "Volatile Implementation (Benchmark #6)");
         System.out.println("-----------------------------------------------------------------");
     }
 
