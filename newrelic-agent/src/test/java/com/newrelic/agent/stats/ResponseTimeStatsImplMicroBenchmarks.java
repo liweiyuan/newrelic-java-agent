@@ -29,6 +29,15 @@ public class ResponseTimeStatsImplMicroBenchmarks {
         printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #5)");
         printResultsFor(currentNotThreadSafe, "Current Implementation (Benchmark #6)");
         System.out.println("-----------------------------------------------------------------");
+        ResponseTimeStats sloppySynchronized = new ResponseTimeStatsSynchronizedImpl();
+        printResultsFor(sloppySynchronized, "Synchronized Implementation (Warmup)");
+        printResultsFor(sloppySynchronized, "Synchronized Implementation (Benchmark #1)");
+        printResultsFor(sloppySynchronized, "Synchronized Implementation (Benchmark #2)");
+        printResultsFor(sloppySynchronized, "Synchronized Implementation (Benchmark #3)");
+        printResultsFor(sloppySynchronized, "Synchronized Implementation (Benchmark #4)");
+        printResultsFor(sloppySynchronized, "Synchronized Implementation (Benchmark #5)");
+        printResultsFor(sloppySynchronized, "Synchronized Implementation (Benchmark #6)");
+        System.out.println("-----------------------------------------------------------------");
         ResponseTimeStats atomicImpl = new ResponseTimeStatsAtomicImpl();
         printResultsFor(atomicImpl, "Atomic Implementation (Warmup)");
         printResultsFor(atomicImpl, "Atomic Implementation (Benchmark #1)");
