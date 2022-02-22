@@ -188,7 +188,7 @@ public class ResponseTimeStatsAtomicImpl implements ResponseTimeStats {
 
     @Override
     public String toString() {
-        return "ResponseTimeStatsImpl [total=" + total.get() + ", totalExclusive=" + totalExclusive + ", minValue="
+        return "ResponseTimeStatsAtomicImpl [total=" + total.get() + ", totalExclusive=" + totalExclusive + ", minValue="
                 + minValue + ", maxValue=" + maxValue + ", sumOfSquares=" + sumOfSquares + "]";
 
     }
